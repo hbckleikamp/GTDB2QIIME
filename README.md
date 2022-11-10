@@ -25,7 +25,7 @@ If you would like to use this pipeline in your research, please cite the followi
 
 
 #### Contact:
--Hugo Kleimamp (Developer): H.B.C.Kleikamp@tudelft.nl<br> 
+-Hugo Kleimamp (Developer): hbckl@bio.aau.dk <br> 
 -Martin Pabst: M.Pabst@tudelft.nl<br>
 
 
