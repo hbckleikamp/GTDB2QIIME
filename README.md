@@ -22,7 +22,7 @@ If you would like to use this pipeline in your research, please cite the followi
 -Bolyen E, et al. 2019. Reproducible, interactive, scalable and extensible microbiome data science using QIIME 2. Nature Biotechnology 37:852–857. https://doi.org/10.1038/s41587-019-0209-9
 <br>
 -Parks, D.H., et al. 2020. A complete domain-to-species taxonomy for Bacteria and Archaea. Nature Biotechnology, https://doi.org/10.1038/s41587-020-0501-8.
-
+-Kleikamp, Hugo BC, et al. "Comparative metaproteomics demonstrates different views on the complex granular sludge microbiome." bioRxiv (2022).
 
 #### Contact:
 -Hugo Kleimamp (Developer): hbckl@bio.aau.dk <br> 
