@@ -4,7 +4,6 @@ Created on Fri Nov 12 13:34:07 2021
 
 @author: hbckleikamp
 """
-
 #%% change directory to script directory (should work on windows and mac)
 import os
 from pathlib import Path
@@ -23,13 +22,13 @@ ssu_all_url=   "https://data.gtdb.ecogenomic.org/releases/latest/genomic_files_a
 ssu_all_path=str(Path(basedir,"GTDB_ssu_all"))
 
 #ssu reps 
-ssu_reps_urls=["https://data.gtdb.ecogenomic.org/releases/latest/genomic_files_reps/ar122_ssu_reps.tar.gz",
+ssu_reps_urls=["https://data.gtdb.ecogenomic.org/releases/latest/genomic_files_reps/ar53_ssu_reps.tar.gz",
                "https://data.gtdb.ecogenomic.org/releases/latest/genomic_files_reps/bac120_ssu_reps.tar.gz"]
 ssu_reps_path=str(Path(basedir,"GTDB_ssu_reps"))
 
 
 #metadata for GTDB taxonomy
-meta_urls=["https://data.gtdb.ecogenomic.org/releases/latest/ar122_taxonomy.tsv.gz",
+meta_urls=["https://data.gtdb.ecogenomic.org/releases/latest/ar53_taxonomy.tsv.gz",
            "https://data.gtdb.ecogenomic.org/releases/latest/bac120_taxonomy.tsv.gz"]
 meta_path=str(Path(basedir,"GTDB-Metadata"))
 
