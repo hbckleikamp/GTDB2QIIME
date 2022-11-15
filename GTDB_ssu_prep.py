@@ -39,6 +39,7 @@ metadata_filepaths=[str(Path(basedir,"GTDB-metadata",i)) for i in ["bac120_taxon
 
 minimum_length=1200 #length trimming of fragmented GTDB ssu sequences 
 
+
 #%% Reps
 
 out_fa=reps_output_base_filename+".fa"
@@ -55,6 +56,8 @@ tdf.columns=["tax_id","lineage"]
 tdf[ranks]=tdf["lineage"].str.rsplit(";",expand=True)
 tdf=tdf[["tax_id"]+ranks[::-1]]
 tdf.to_csv(out_txt,index=False,sep="\t")
+
+tdf[["tax_id","tax_id"]].to_csv(out_txt.replace(".tsv",".map"),index=False,header=None,sep="\t")
 
 #%%
 
@@ -105,7 +108,7 @@ records=records.merge(tdf,on="short_heads",how="inner")
 
 fl_rec=records[records["seqs"].apply(len)>minimum_length]
 fl_tax=fl_rec[["headers","lineage"]].apply("\t".join,axis=1).tolist()
-fl_rec=fl_rec[["headers","seqs"]].apply("\n".join,axis=1).tolist()
+fl_rec=fl_rec[["short_heads","seqs"]].apply("\n".join,axis=1).tolist()
 
 #write to output
 
@@ -122,5 +125,5 @@ tdf.columns=["tax_id","lineage"]
 tdf["tax_id"]=tdf["tax_id"].str.replace(">","")
 tdf[ranks]=tdf["lineage"].str.rsplit(";",expand=True)
 tdf=tdf[["tax_id"]+ranks[::-1]]
-tdf.to_csv(out_txt,index=False,sep="\t")
-
+tdf.drop_duplicates().to_csv(out_txt,index=False,sep="\t")
+tdf[["tax_id","tax_id"]].drop_duplicates().to_csv(out_txt.replace(".tsv",".map"),index=False,header=None,sep="\t")
