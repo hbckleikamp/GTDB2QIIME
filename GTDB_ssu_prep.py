@@ -39,8 +39,10 @@ metadata_filepaths=[str(Path(basedir,"GTDB-metadata",i)) for i in ["bac120_taxon
 
 minimum_length=1200 #length trimming of fragmented GTDB ssu sequences 
 
-
 #%% Reps
+
+out_fa=reps_output_base_filename+".fa"
+out_txt=reps_output_base_filename+".tsv"
 
 #get taxonomies
 ranks=["superkingdom","phylum","class","order","family","genus","species"]
@@ -48,6 +50,14 @@ tdf=[]
 for t in metadata_filepaths:
     tdf.append(pd.read_csv(t,header=None,sep="\t"))#["Accession"]+ranks)
 tdf=pd.concat(tdf)
+
+tdf.columns=["tax_id","lineage"]
+tdf[ranks]=tdf["lineage"].str.rsplit(";",expand=True)
+tdf=tdf[["tax_id"]+ranks[::-1]]
+tdf.to_csv(out_txt,index=False,sep="\t")
+
+#%%
+
 
 records=[]
 for file in reps_input_files:
@@ -58,18 +68,20 @@ fl_tax=tdf[tdf.iloc[:,0].isin(fl_rec["headers"])].apply("\t".join,axis=1).tolist
 fl_rec=fl_rec[["headers","seqs"]].apply("\n".join,axis=1).tolist()
 
 #write to output
-out_fa=reps_output_base_filename+".fa"
-out_txt=reps_output_base_filename+".txt"
+
 if out_fa  in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_fa)))
-if out_txt in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_txt)))
-with open(str(Path(reps_input_folder,out_fa)),"a+") as fa, open(str(Path(reps_input_folder,out_txt)),"a+") as txt:
+# if out_txt in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_txt)))
+with open(out_fa,"a+") as fa: #, open(str(Path(reps_input_folder,out_txt)),"a+") as txt:
 
     for ix in range(len(fl_rec)):
         print(ix)
         fa.write ((">"+fl_rec[ix]+"\n").replace("\x00",""))
-        txt.write((fl_tax[ix]+"\n").replace("\x00","")) #remove bytestring
+        # txt.write((fl_tax[ix]+"\n").replace("\x00","")) #remove bytestring
+
 
 #%% All
+out_fa=all_output_base_filename+".fa"
+out_txt=all_output_base_filename+".tsv"
 
 #get taxonomies
 lines=[]
@@ -80,6 +92,9 @@ with open(file ,"r") as f:
         if line.startswith(">"):
             lines.append(line.split("[")[0].strip().split(" ",1))
 tdf=pd.DataFrame(lines,columns=["short_heads","lineage"])
+
+
+
 
 records=pd.DataFrame([[str(i.id),str(i.seq)] for i in Bio.SeqIO.parse(all_input_file,"fasta")],columns=["headers","seqs"])
 records["headers"]=">"+records["headers"]
@@ -93,14 +108,19 @@ fl_tax=fl_rec[["headers","lineage"]].apply("\t".join,axis=1).tolist()
 fl_rec=fl_rec[["headers","seqs"]].apply("\n".join,axis=1).tolist()
 
 #write to output
-out_fa=all_output_base_filename+".fa"
-out_txt=all_output_base_filename+".txt"
+
 if out_fa  in os.listdir(all_input_folder): os.remove(str(Path(all_input_folder,out_fa)))
-if out_txt in os.listdir(all_input_folder): os.remove(str(Path(all_input_folder,out_txt)))
-with open(str(Path(all_input_folder,out_fa)),"a+") as fa, open(str(Path(all_input_folder,out_txt)),"a+") as txt:
+# if out_txt in os.listdir(all_input_folder): os.remove(str(Path(all_input_folder,out_txt)))
+with open(out_fa,"a+") as fa:#, open(str(Path(all_input_folder,out_txt)),"a+") as txt:
 
     for ix in range(len(fl_rec)):
         print(ix)
         fa.write ((fl_rec[ix]+"\n").replace("\x00",""))
-        txt.write((fl_tax[ix][1:]+"\n").replace("\x00","")) #remove bytestring
+        # txt.write((fl_tax[ix][1:]+"\n").replace("\x00","")) #remove bytestring
+        
+tdf.columns=["tax_id","lineage"]
+tdf["tax_id"]=tdf["tax_id"].str.replace(">","")
+tdf[ranks]=tdf["lineage"].str.rsplit(";",expand=True)
+tdf=tdf[["tax_id"]+ranks[::-1]]
+tdf.to_csv(out_txt,index=False,sep="\t")
 
