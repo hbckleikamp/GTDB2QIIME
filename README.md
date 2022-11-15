@@ -1,6 +1,6 @@
 # GTDB2EMU
 
-Set of simple auxiliary python scripts to help create GTDB databases for annotation with QIIME
+Set of simple auxiliary python scripts to help create GTDB databases for annotation with EMU
 
 <br>
 This collection of scripts is designed to facillitate EMU annotations with GTDB reps ssu, or GTDB all ssu 
