@@ -18,7 +18,7 @@ basedir=os.getcwd()
 
 #%% standard Modules
 import pandas as pd
-
+import numpy as np
 import Bio
 from Bio import SeqIO
 
@@ -39,91 +39,77 @@ metadata_filepaths=[str(Path(basedir,"GTDB-metadata",i)) for i in ["bac120_taxon
 
 minimum_length=1200 #length trimming of fragmented GTDB ssu sequences 
 
-
+ranks=["superkingdom","phylum","class","order","family","genus","species"]
 #%% Reps
+
+output_folder="GTDB_reps_emu"
+path=str(Path(basedir,output_folder))
+if not os.path.exists(path): os.mkdir(path)
 
 out_fa=reps_output_base_filename+".fa"
 out_txt=reps_output_base_filename+".tsv"
 
 #get taxonomies
-ranks=["superkingdom","phylum","class","order","family","genus","species"]
 tdf=[]
 for t in metadata_filepaths:
     tdf.append(pd.read_csv(t,header=None,sep="\t"))#["Accession"]+ranks)
 tdf=pd.concat(tdf)
 
-tdf.columns=["tax_id","lineage"]
+tdf.columns=["accessions","lineage"]
 tdf[ranks]=tdf["lineage"].str.rsplit(";",expand=True)
-tdf=tdf[["tax_id"]+ranks[::-1]]
-tdf.to_csv(out_txt,index=False,sep="\t")
-
-tdf[["tax_id","tax_id"]].to_csv(out_txt.replace(".tsv",".map"),index=False,header=None,sep="\t")
-
-#%%
-
 
 records=[]
 for file in reps_input_files:
-    records.append(pd.DataFrame([[str(i.id),str(i.seq)] for i in Bio.SeqIO.parse(file,"fasta")],columns=["headers","seqs"]))
+    records.append(pd.DataFrame([[str(i.id),str(i.seq)] for i in Bio.SeqIO.parse(file,"fasta")],columns=["accessions","seqs"]))
 records=pd.concat(records)
-fl_rec=records[records["seqs"].apply(len)>minimum_length]
-fl_tax=tdf[tdf.iloc[:,0].isin(fl_rec["headers"])].apply("\t".join,axis=1).tolist()
-fl_rec=fl_rec[["headers","seqs"]].apply("\n".join,axis=1).tolist()
+fl_rec=records[records["seqs"].apply(len)>minimum_length].drop_duplicates()
+fl_rec["tax_id"]=np.arange(1,len(fl_rec)+1)
+
+fasta=("\n".join(">"+fl_rec["tax_id"].astype(str)+":"+fl_rec["accessions"]+"\n"+fl_rec["seqs"])+"\n").replace("\x00","")
 
 #write to output
-
 if out_fa  in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_fa)))
-# if out_txt in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_txt)))
-with open(out_fa,"a+") as fa: #, open(str(Path(reps_input_folder,out_txt)),"a+") as txt:
+with open(str(Path(basedir,output_folder,"species_taxid.fa")),"w") as fa: 
+    fa.write(fasta)
 
-    for ix in range(len(fl_rec)):
-        print(ix)
-        fa.write ((">"+fl_rec[ix]+"\n").replace("\x00",""))
-        # txt.write((fl_tax[ix]+"\n").replace("\x00","")) #remove bytestring
-
+tdf=tdf.merge(fl_rec,on="accessions")
+tdf=tdf[["tax_id"]+ranks[::-1]]
+tdf.to_csv(str(Path(basedir,output_folder,"taxonomy.tsv")),index=False,sep="\t")
 
 #%% All
+
+output_folder="GTDB_all_emu"
+path=str(Path(basedir,output_folder))
+if not os.path.exists(path): os.mkdir(path)
+
 out_fa=all_output_base_filename+".fa"
 out_txt=all_output_base_filename+".tsv"
 
 #get taxonomies
 lines=[]
-with open(file ,"r") as f:
+with open(all_input_file ,"r") as f:
     for line in f.readlines():
         line=line.replace("\x00","")
         
         if line.startswith(">"):
             lines.append(line.split("[")[0].strip().split(" ",1))
-tdf=pd.DataFrame(lines,columns=["short_heads","lineage"])
+tdf=pd.DataFrame(lines,columns=["accessions","lineage"])
+tdf["accessions"]=tdf["accessions"].str.replace(">","")
+tdf[ranks]=tdf["lineage"].str.rsplit(";",expand=True)
 
 
-
-
-records=pd.DataFrame([[str(i.id),str(i.seq)] for i in Bio.SeqIO.parse(all_input_file,"fasta")],columns=["headers","seqs"])
-records["headers"]=">"+records["headers"]
-records["short_heads"]=records["headers"].apply(lambda x: x.split("~")[0])
-
-
-records=records.merge(tdf,on="short_heads",how="inner")
-
+records=pd.DataFrame([[str(i.id),str(i.seq)] for i in Bio.SeqIO.parse(all_input_file,"fasta")],columns=["accessions","seqs"])
 fl_rec=records[records["seqs"].apply(len)>minimum_length]
-fl_tax=fl_rec[["headers","lineage"]].apply("\t".join,axis=1).tolist()
-fl_rec=fl_rec[["short_heads","seqs"]].apply("\n".join,axis=1).tolist()
+fl_rec["tax_id"]=np.arange(1,len(fl_rec)+1)
+
+
+fasta=("\n".join(">"+fl_rec["tax_id"].astype(str)+":"+fl_rec["accessions"]+"\n"+fl_rec["seqs"])+"\n").replace("\x00","")
 
 #write to output
+if out_fa  in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_fa)))
+with open(str(Path(basedir,output_folder,"species_taxid.fa")),"w") as fa: 
+    fa.write(fasta)
 
-if out_fa  in os.listdir(all_input_folder): os.remove(str(Path(all_input_folder,out_fa)))
-# if out_txt in os.listdir(all_input_folder): os.remove(str(Path(all_input_folder,out_txt)))
-with open(out_fa,"a+") as fa:#, open(str(Path(all_input_folder,out_txt)),"a+") as txt:
-
-    for ix in range(len(fl_rec)):
-        print(ix)
-        fa.write ((fl_rec[ix]+"\n").replace("\x00",""))
-        # txt.write((fl_tax[ix][1:]+"\n").replace("\x00","")) #remove bytestring
-        
-tdf.columns=["tax_id","lineage"]
-tdf["tax_id"]=tdf["tax_id"].str.replace(">","")
-tdf[ranks]=tdf["lineage"].str.rsplit(";",expand=True)
+tdf=tdf.merge(fl_rec,on="accessions")
 tdf=tdf[["tax_id"]+ranks[::-1]]
-tdf.drop_duplicates().to_csv(out_txt,index=False,sep="\t")
-tdf[["tax_id","tax_id"]].drop_duplicates().to_csv(out_txt.replace(".tsv",".map"),index=False,header=None,sep="\t")
+tdf.to_csv(str(Path(basedir,output_folder,"taxonomy.tsv")),index=False,sep="\t")
