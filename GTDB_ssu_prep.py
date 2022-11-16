@@ -69,7 +69,7 @@ fasta=("\n".join(">"+fl_rec["tax_id"].astype(str)+":"+fl_rec["accessions"]+"\n"+
 
 #write to output
 if out_fa  in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_fa)))
-with open(str(Path(basedir,output_folder,"species_taxid.fa")),"w") as fa: 
+with open(str(Path(basedir,output_folder,"species_taxid.fasta")),"w") as fa: 
     fa.write(fasta)
 
 tdf=tdf.merge(fl_rec,on="accessions")
@@ -107,7 +107,7 @@ fasta=("\n".join(">"+fl_rec["tax_id"].astype(str)+":"+fl_rec["accessions"]+"\n"+
 
 #write to output
 if out_fa  in os.listdir(reps_input_folder): os.remove(str(Path(reps_input_folder,out_fa)))
-with open(str(Path(basedir,output_folder,"species_taxid.fa")),"w") as fa: 
+with open(str(Path(basedir,output_folder,"species_taxid.fasta")),"w") as fa: 
     fa.write(fasta)
 
 tdf=tdf.merge(fl_rec,on="accessions")
